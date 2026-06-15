@@ -289,7 +289,7 @@ const LOGO='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAWgAAAFoCAIAAAD1h/aCAA
    ============================================================ */
 /* def = valore opportunità stimato (€) quando non c'è ancora un preventivo */
 const TREATMENTS=[
-  {k:'allon4',     l:'All-on-4 / Arcata fissa', c:'#0E9C94', def:6500},
+  {k:'allon4',     l:'All-on-4 / Arcata fissa', c:'#0E9C94', def:5000},
   {k:'impianto',   l:'Implantologia singola',   c:'#0E7490', def:1500},
   {k:'overdenture',l:'Overdenture',             c:'#7C3AED', def:3800},
   {k:'protesi',    l:'Protesi',                 c:'#DB2777', def:2400},
@@ -660,21 +660,11 @@ const LeadDetail=({lead,activities,appts,onClose,onEdit,onDelete,onStatusChange,
                     </select>
                   </div>
                 </div>
-                {(lead.bisogno_implantologia||lead.quando_iniziare||lead.zona_spoleto)&&<div className="fg">
-                  <div className="card" style={{padding:14,borderColor:'#BFDBFE',background:'#F4F9FF'}}>
-                    <div className="flbl" style={{color:'var(--blue)'}}>Risposte dal modulo {lead.campaign?'· '+lead.campaign:''}</div>
-                    {lead.bisogno_implantologia&&<div className="qa">
-                      <div className="qa-q">Ha bisogno di implantologia</div>
-                      <div className="qa-a">{lead.bisogno_implantologia}</div>
-                    </div>}
-                    {lead.quando_iniziare&&<div className="qa">
-                      <div className="qa-q">Quando vuole iniziare</div>
-                      <div className="qa-a">{lead.quando_iniziare}</div>
-                    </div>}
-                    {lead.zona_spoleto&&<div className="qa">
-                      <div className="qa-q">È di Spoleto o dintorni</div>
-                      <div className="qa-a">{lead.zona_spoleto}</div>
-                    </div>}
+                {lead.ad_name&&<div className="fg">
+                  <div className="card" style={{padding:14}}>
+                    <div className="flbl">Grafica di provenienza</div>
+                    <div style={{fontSize:13.5,fontWeight:800,color:'var(--tx)'}}>🎯 {lead.ad_name}</div>
+                    <div style={{fontSize:11.5,color:'var(--tx-3)',marginTop:2}}>Inserzione che ha portato questo paziente</div>
                   </div>
                 </div>}
                 {lead.fb_answers&&lead.fb_answers.length>0&&<div className="fg">
