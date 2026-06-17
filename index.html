@@ -300,6 +300,21 @@ const TREATMENTS=[
 ];
 const TREAT_MAP=Object.fromEntries(TREATMENTS.map(t=>[t.k,t]));
 
+/* Colonne del modulo Facebook (Spoleto): nome colonna DB -> domanda mostrata.
+   Per aggiungere/cambiare domande basta modificare qui. */
+const FB_FIELDS=[
+  {col:'bisogno_implantologia', q:'Conferma di aver bisogno di implantologia?'},
+  {col:'quando_iniziare',       q:'Quando vorrebbe iniziare?'},
+  {col:'zona_spoleto',          q:'Risiede in zona Spoleto?'}
+];
+/* Compone l'elenco risposte leggendo sia fb_answers (jsonb) sia le colonne singole */
+const getFbAnswers=l=>{
+  if(Array.isArray(l.fb_answers)&&l.fb_answers.length>0)return l.fb_answers;
+  const out=[];
+  FB_FIELDS.forEach(f=>{ const v=l[f.col]; if(v!==null&&v!==undefined&&String(v).trim()!=='')out.push({q:f.q,a:String(v)}); });
+  return out;
+};
+
 /* Pipeline paziente — dal lead alla poltrona */
 const STATUSES=[
   {k:'nuovo',       l:'Da chiamare',        c:'#2563EB', bg:'var(--blue-bg)',   fg:'var(--blue)'},
@@ -459,7 +474,10 @@ const LeadForm=({lead,onSave,onClose})=>{
     treatment:lead?.treatment||'allon4',
     status:lead?.status||'nuovo',
     value:lead?.value||'',
-    note:lead?.note||''
+    note:lead?.note||'',
+    bisogno_implantologia:lead?.bisogno_implantologia||'',
+    quando_iniziare:lead?.quando_iniziare||'',
+    zona_spoleto:lead?.zona_spoleto||''
   });
   const [busy,setBusy]=useState(false);
   const upd=(k,v)=>setF(p=>({...p,[k]:v}));
@@ -503,6 +521,15 @@ const LeadForm=({lead,onSave,onClose})=>{
           </div>
           <div className="fg"><label className="flbl">Valore del preventivo (€) — lascia vuoto se non ancora fatto</label>
             <input className="fc" type="number" value={f.value} onChange={e=>upd('value',e.target.value)} placeholder="es. 6500"/></div>
+          <div className="card" style={{padding:13,marginBottom:15,background:'#F4F9FF',borderColor:'#BFDBFE'}}>
+            <div className="flbl" style={{color:'var(--blue)',marginBottom:10}}>Risposte dal modulo Facebook (compilabili a mano)</div>
+            <div className="fg" style={{marginBottom:11}}><label className="flbl">Conferma di aver bisogno di implantologia?</label>
+              <input className="fc" value={f.bisogno_implantologia} onChange={e=>upd('bisogno_implantologia',e.target.value)} placeholder="es. sì"/></div>
+            <div className="fg" style={{marginBottom:11}}><label className="flbl">Quando vorrebbe iniziare?</label>
+              <input className="fc" value={f.quando_iniziare} onChange={e=>upd('quando_iniziare',e.target.value)} placeholder="es. il prima possibile"/></div>
+            <div className="fg" style={{marginBottom:0}}><label className="flbl">Risiede in zona Spoleto?</label>
+              <input className="fc" value={f.zona_spoleto} onChange={e=>upd('zona_spoleto',e.target.value)} placeholder="es. sì / no"/></div>
+          </div>
           <div className="fg"><label className="flbl">Note</label>
             <textarea className="fc" value={f.note} onChange={e=>upd('note',e.target.value)} placeholder="Cosa ha detto il paziente, esigenze, orari preferiti…"/></div>
         </div>
@@ -667,10 +694,10 @@ const LeadDetail=({lead,activities,appts,onClose,onEdit,onDelete,onStatusChange,
                     <div style={{fontSize:11.5,color:'var(--tx-3)',marginTop:2}}>Inserzione che ha portato questo paziente</div>
                   </div>
                 </div>}
-                {lead.fb_answers&&lead.fb_answers.length>0&&<div className="fg">
+                {getFbAnswers(lead).length>0&&<div className="fg">
                   <div className="card" style={{padding:14,borderColor:'#BFDBFE',background:'#F4F9FF'}}>
                     <div className="flbl" style={{color:'var(--blue)'}}>Risposte dal modulo Facebook {lead.campaign?'· '+lead.campaign:''}</div>
-                    {lead.fb_answers.map((qa,i)=>(
+                    {getFbAnswers(lead).map((qa,i)=>(
                       <div key={i} className="qa">
                         <div className="qa-q">{qa.q}</div>
                         <div className="qa-a">{qa.a}</div>
@@ -1271,7 +1298,8 @@ const App=()=>{
   /* ---- PAZIENTI ---- */
   const saveLead=async l=>{
     const row={full_name:l.full_name,phone:l.phone,email:l.email,source:l.source,campaign:l.campaign||null,
-      treatment:l.treatment,status:l.status,value:l.value,note:l.note||null};
+      treatment:l.treatment,status:l.status,value:l.value,note:l.note||null,
+      bisogno_implantologia:l.bisogno_implantologia||null,quando_iniziare:l.quando_iniziare||null,zona_spoleto:l.zona_spoleto||null};
     if(l.id){
       const {error}=await sb.from('leads').update(row).eq('id',l.id);
       if(error){showToast('Errore: '+error.message,'err');return false}
